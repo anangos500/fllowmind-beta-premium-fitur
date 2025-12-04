@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    
+    <!-- PWA and Mobile Meta Tags -->
+    <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%232563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8c4 0 6 4 10 4s6-4 8-4"/><path d="M3 12c4 0 6 4 10 4s6-4 8-4"/><path d="M3 16c4 0 6 4 10 4s6-4 8-4"/></svg>'>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2563eb">
+    
+    <!-- iOS support -->
+    <link rel="apple-touch-icon" href='data:image/svg+xml,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="%23f8fafc"/><g transform="translate(15 15) scale(3)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%232563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8c4 0 6 4 10 4s6-4 8-4"/><path d="M3 12c4 0 6 4 10 4s6-4 8-4"/><path d="M3 16c4 0 6 4 10 4s6-4 8-4"/></svg></g></svg>'>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Flowmind">
+
+    <title>Flowmind</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* 
+         DESKTOP SCALING ADJUSTMENT 
+         Mengecilkan base font-size pada layar besar agar tampilan lebih padat (compact)
+         14px = 0.875rem dari 16px default browser.
+      */
+      @media (min-width: 1024px) {
+        html {
+          font-size: 14px;
+        }
+      }
+
+      /* Color Scheme for Native Controls (Scrollbars) */
+      html {
+        color-scheme: light;
+      }
+      html.dark {
+        color-scheme: dark;
+      }
+
+      /* Elegant Scrollbar Configuration */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1; /* slate-300 */
+        border-radius: 4px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; /* slate-400 */
+      }
+
+      /* Dark mode overrides */
+      .dark ::-webkit-scrollbar-thumb {
+        background: #475569; /* slate-600 */
+      }
+
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: #64748b; /* slate-500 */
+      }
+
+      /* Firefox support */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+      }
+
+      .dark * {
+        scrollbar-color: #475569 transparent;
+      }
+
+      /* --- THEME OVERRIDES --- 
+         We use !important to override atomic Tailwind classes when a theme class is active on <html> 
+      */
+
+      /* 1. Nature Green (Emerald) */
+      html.theme-nature .bg-blue-600 { background-color: #10b981 !important; border-color: #10b981 !important; }
+      html.theme-nature .bg-blue-500 { background-color: #10b981 !important; border-color: #10b981 !important; }
+      html.theme-nature .hover\:bg-blue-700:hover { background-color: #047857 !important; border-color: #047857 !important; }
+      html.theme-nature .text-blue-600 { color: #059669 !important; }
+      html.theme-nature .text-blue-500 { color: #10b981 !important; }
+      html.theme-nature .bg-blue-100 { background-color: #d1fae5 !important; color: #065f46 !important; }
+      html.theme-nature .border-blue-600 { border-color: #10b981 !important; }
+      html.theme-nature .border-blue-500 { border-color: #10b981 !important; }
+      html.theme-nature .focus\:ring-blue-500:focus { --tw-ring-color: #10b981 !important; }
+      html.theme-nature .ring-blue-500 { --tw-ring-color: #10b981 !important; }
+
+      /* 2. Ocean Blue (Cyan/Sky) - Lighter/Fresher than default blue */
+      html.theme-ocean .bg-blue-600 { background-color: #06b6d4 !important; border-color: #06b6d4 !important; }
+      html.theme-ocean .bg-blue-500 { background-color: #06b6d4 !important; border-color: #06b6d4 !important; }
+      html.theme-ocean .hover\:bg-blue-700:hover { background-color: #0891b2 !important; border-color: #0891b2 !important; }
+      html.theme-ocean .text-blue-600 { color: #0891b2 !important; }
+      html.theme-ocean .text-blue-500 { color: #06b6d4 !important; }
+      html.theme-ocean .bg-blue-100 { background-color: #cffafe !important; color: #155e75 !important; }
+      html.theme-ocean .border-blue-600 { border-color: #06b6d4 !important; }
+      html.theme-ocean .border-blue-500 { border-color: #06b6d4 !important; }
+      html.theme-ocean .focus\:ring-blue-500:focus { --tw-ring-color: #06b6d4 !important; }
+      html.theme-ocean .ring-blue-500 { --tw-ring-color: #06b6d4 !important; }
+
+      /* 3. Sunset Orange */
+      html.theme-sunset .bg-blue-600 { background-color: #f97316 !important; border-color: #f97316 !important; }
+      html.theme-sunset .bg-blue-500 { background-color: #f97316 !important; border-color: #f97316 !important; }
+      html.theme-sunset .hover\:bg-blue-700:hover { background-color: #c2410c !important; border-color: #c2410c !important; }
+      html.theme-sunset .text-blue-600 { color: #ea580c !important; }
+      html.theme-sunset .text-blue-500 { color: #f97316 !important; }
+      html.theme-sunset .bg-blue-100 { background-color: #ffedd5 !important; color: #9a3412 !important; }
+      html.theme-sunset .border-blue-600 { border-color: #f97316 !important; }
+      html.theme-sunset .border-blue-500 { border-color: #f97316 !important; }
+      html.theme-sunset .focus\:ring-blue-500:focus { --tw-ring-color: #f97316 !important; }
+      html.theme-sunset .ring-blue-500 { --tw-ring-color: #f97316 !important; }
+
+      /* 4. Cyber Purple */
+      html.theme-purple .bg-blue-600 { background-color: #8b5cf6 !important; border-color: #8b5cf6 !important; }
+      html.theme-purple .bg-blue-500 { background-color: #8b5cf6 !important; border-color: #8b5cf6 !important; }
+      html.theme-purple .hover\:bg-blue-700:hover { background-color: #6d28d9 !important; border-color: #6d28d9 !important; }
+      html.theme-purple .text-blue-600 { color: #7c3aed !important; }
+      html.theme-purple .text-blue-500 { color: #8b5cf6 !important; }
+      html.theme-purple .bg-blue-100 { background-color: #ede9fe !important; color: #5b21b6 !important; }
+      html.theme-purple .border-blue-600 { border-color: #8b5cf6 !important; }
+      html.theme-purple .border-blue-500 { border-color: #8b5cf6 !important; }
+      html.theme-purple .focus\:ring-blue-500:focus { --tw-ring-color: #8b5cf6 !important; }
+      html.theme-purple .ring-blue-500 { --tw-ring-color: #8b5cf6 !important; }
+
+      /* 5. Sakura Pink */
+      html.theme-pink .bg-blue-600 { background-color: #db2777 !important; border-color: #db2777 !important; }
+      html.theme-pink .bg-blue-500 { background-color: #db2777 !important; border-color: #db2777 !important; }
+      html.theme-pink .hover\:bg-blue-700:hover { background-color: #be185d !important; border-color: #be185d !important; }
+      html.theme-pink .text-blue-600 { color: #db2777 !important; }
+      html.theme-pink .text-blue-500 { color: #ec4899 !important; }
+      html.theme-pink .bg-blue-100 { background-color: #fce7f3 !important; color: #9d174d !important; }
+      html.theme-pink .border-blue-600 { border-color: #db2777 !important; }
+      html.theme-pink .border-blue-500 { border-color: #db2777 !important; }
+      html.theme-pink .focus\:ring-blue-500:focus { --tw-ring-color: #db2777 !important; }
+      html.theme-pink .ring-blue-500 { --tw-ring-color: #db2777 !important; }
+
+    </style>
+    <script>
+      // Skrip ini dijalankan lebih awal untuk mencegah FOUC (Flash of Unstyled Content) saat beralih tema
+      if (
+        localStorage.getItem('theme') === 'dark' ||
+        (!('theme' in localStorage) &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches)
+      ) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+
+      tailwind.config = {
+        darkMode: 'class', // Mengaktifkan strategi kelas untuk mode gelap
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            keyframes: {
+              'fade-in': {
+                '0%': { opacity: '0', transform: 'translateY(-10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              'infinite-scroll': {
+                'from': { transform: 'translateX(0)' },
+                'to': { transform: 'translateX(-100%)' },
+              },
+              'scan': {
+                '0%, 100%': { top: '0%' },
+                '50%': { top: '100%' },
+              }
+            },
+            animation: {
+              'fade-in': 'fade-in 0.3s ease-out forwards',
+              'infinite-scroll': 'infinite-scroll 60s linear infinite',
+              'scan': 'scan 3s linear infinite',
+            },
+          },
+        },
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "recharts": "https://aistudiocdn.com/recharts@^3.2.1",
+    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.58.0",
+    "jspdf": "https://aistudiocdn.com/jspdf@^2.5.1",
+    "html2canvas": "https://aistudiocdn.com/html2canvas@^1.4.1",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^0.15.0",
+    "@netlify/functions": "https://aistudiocdn.com/@netlify/functions@^4.2.6",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
+    "vite": "https://aistudiocdn.com/vite@^7.2.2",
+    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "url": "https://aistudiocdn.com/url@^0.11.4"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
