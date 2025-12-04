@@ -78,24 +78,39 @@ const SocialMediaView: React.FC = () => {
         }
     };
 
-    // --- Simulation Logic ---
+    // --- Real OAuth and Publishing Logic ---
     const checkScheduledPosts = async () => {
         const now = new Date();
-        const postsToUpdate = posts.filter(p => 
+        const postsToUpdate = posts.filter(p =>
             p.status === 'scheduled' && new Date(p.scheduledTime) <= now
         );
 
         if (postsToUpdate.length > 0) {
-            // Simulasi proses posting
             for (const post of postsToUpdate) {
                 // Update local state first for instant feedback
                 setPosts(prev => prev.map(p => p.id === post.id ? { ...p, status: 'posting' } : p));
-                
-                // Wait randomly 2-5 seconds
-                await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000));
-                
-                // Update DB to posted
-                await supabase.from('social_posts').update({ status: 'posted' }).eq('id', post.id);
+
+                try {
+                    // Call the edge function to publish
+                    const { data: session } = await supabase.auth.getSession();
+                    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/social-publish`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.session?.access_token}`,
+                        },
+                        body: JSON.stringify({ postId: post.id })
+                    });
+
+                    const result = await response.json();
+                    console.log('Publish result:', result);
+                } catch (error) {
+                    console.error('Failed to publish:', error);
+                    await supabase.from('social_posts').update({
+                        status: 'failed',
+                        error_message: error instanceof Error ? error.message : 'Unknown error'
+                    }).eq('id', post.id);
+                }
             }
             fetchData(); // Refresh data
         }
@@ -103,26 +118,57 @@ const SocialMediaView: React.FC = () => {
 
     const handleConnectAccount = async (platform: SocialPlatform) => {
         if (!user) return;
-        
-        // Simulation: Fake OAuth popup delay
-        const mockWindow = window.open('', '_blank', 'width=500,height=600');
-        if (mockWindow) {
-            mockWindow.document.write(`<h1>Connecting to ${platform}...</h1><p>Please wait...</p>`);
-            setTimeout(async () => {
-                mockWindow.close();
-                
-                const mockUsername = `${user.email?.split('@')[0]}_${platform}`;
-                
-                await supabase.from('social_accounts').upsert({
-                    user_id: user.id,
-                    platform,
-                    username: mockUsername,
-                    connected: true,
-                    avatar_url: `https://ui-avatars.com/api/?name=${platform}&background=random`
-                }, { onConflict: 'user_id, platform' });
-                
-                fetchData();
-            }, 1500);
+
+        try {
+            // Get OAuth URL from edge function
+            const { data: session } = await supabase.auth.getSession();
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/social-oauth-init`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.session?.access_token}`,
+                },
+                body: JSON.stringify({ platform })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                alert(`Error: ${data.error}\n\n${data.instructions || ''}`);
+                return;
+            }
+
+            if (data.authUrl) {
+                // Open OAuth window
+                const width = 600;
+                const height = 700;
+                const left = window.screen.width / 2 - width / 2;
+                const top = window.screen.height / 2 - height / 2;
+
+                const authWindow = window.open(
+                    data.authUrl,
+                    'OAuth',
+                    `width=${width},height=${height},left=${left},top=${top}`
+                );
+
+                // Listen for OAuth callback
+                const handleMessage = (event: MessageEvent) => {
+                    if (event.data.type === 'oauth-success' && event.data.platform === platform) {
+                        window.removeEventListener('message', handleMessage);
+                        fetchData(); // Refresh to show connected account
+                    }
+                };
+
+                window.addEventListener('message', handleMessage);
+
+                // Cleanup listener after 5 minutes
+                setTimeout(() => {
+                    window.removeEventListener('message', handleMessage);
+                }, 5 * 60 * 1000);
+            }
+        } catch (error) {
+            console.error('OAuth init error:', error);
+            alert('Failed to initiate OAuth. Please try again.');
         }
     };
 
